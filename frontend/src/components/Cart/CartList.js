@@ -30,13 +30,11 @@ class CartList extends React.PureComponent {
   }
 
   handleAddProduct = (product) => {
-    // console.log("clicked",product);
     this.props.addToCartAction(product);
-    this.setState({orderPlaced:false});
+    this.setState({ orderPlaced: false });
   };
 
   updateStates = (cart) => {
-    // console.log("updating state", cart);
     let cartTotalAmount = 0;
     let cartTotalQuantity = 0;
     for (let i = 0; i < cart.length; i++) {
@@ -54,6 +52,13 @@ class CartList extends React.PureComponent {
     e.preventDefault();
 
     var userAuth = JSON.parse(localStorage.getItem("userAuthDetails"));
+
+    if (!userAuth || !userAuth.user) {
+      alert("User not logged in! Please log in first.");
+      window.location.href = "/login"; // Redirect to login page
+      return;
+    }
+
     const config = {
       headers: {
         "Content-Type": "application/json",
@@ -66,7 +71,6 @@ class CartList extends React.PureComponent {
     const orderTotalQuantity = this.state.cartTotalQuantity;
     const orderTotalAmount = this.state.cartTotalAmount;
 
-    //Request body
     const body = {
       order,
       user,
@@ -77,12 +81,15 @@ class CartList extends React.PureComponent {
     axios.post("/api/orders/", body, config).then(
       (res) => {
         console.log(res.data, res.status);
-        this.setState({orderPlaced:true});
+        this.setState({ orderPlaced: true });
         localStorage.removeItem("localCart");
         this.updateStates([]);
         window.location.reload(true);
       },
-      (err) => console.log(err)
+      (err) => {
+        console.error("Error placing order:", err);
+        alert("Failed to place order. Please try again.");
+      }
     );
   };
 
